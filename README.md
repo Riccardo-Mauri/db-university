@@ -94,3 +94,98 @@ UPDATE `teachers` SET `office_number`=126
 
 11. Eliminare dalla tabella studenti il record creato precedentemente al punto 9
 DELETE FROM `students` WHERE id=il mio id in questo caso era 5001
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+QUERY con JOIN
+
+1. Selezionare tutti gli studenti iscritti al Corso di Laurea in Economia
+SELECT * 
+FROM students 
+INNER JOIN degrees 
+ON students.degree_id =degrees.id
+WHERE degrees.name = 'Corso di Laurea in Economia';
+
+2. Selezionare tutti i Corsi di Laurea Magistrale del Dipartimento di
+Neuroscienze
+SELECT * FROM `departments`
+INNER JOIN degrees
+ON departments.id = degrees.department_id
+WHERE departments.name = 'Dipartimento di Neuroscienze'
+AND degrees.name LIKE '%Corso di Laurea Magistrale%';
+
+3. Selezionare tutti i corsi in cui insegna Fulvio Amato (id=44)
+SELECT * FROM `course_teacher`
+INNER JOIN teachers
+ON course_teacher.teacher_id = teachers.id
+WHERE teachers.id = 44;
+
+
+
+4. Selezionare tutti gli studenti con i dati relativi al corso di laurea a cui
+sono iscritti e il relativo dipartimento, in ordine alfabetico per cognome e
+nome
+SELECT students.id AS students_id, students.surname AS students_surname, students.name AS students_name, degrees.name AS degree_name, departments.name AS department_name
+FROM `students`
+INNER JOIN degrees
+ON degrees.id = students.degree_id
+INNER JOIN departments
+ON departments.id = degrees.department_id
+ORDER BY students_surname, students_name;
+
+
+5. Selezionare tutti i corsi di laurea con i relativi corsi e insegnanti
+SELECT * FROM `degrees`
+INNER JOIN courses
+ON degrees.id = courses.degree_id
+INNER JOIN course_teacher
+ON courses.degree_id = course_teacher.course_id;
+
+
+6. Selezionare tutti i docenti che insegnano nel Dipartimento di
+Matematica (54)
+SELECT DISTINCT teachers.*
+FROM teachers 
+INNER JOIN course_teacher ON teachers.id = course_teacher.teacher_id 
+INNER JOIN courses ON courses.id = course_teacher.course_id 
+INNER JOIN degrees ON degrees.id = courses.degree_id 
+INNER JOIN departments ON departments.id = degrees.department_id 
+WHERE departments.name = 'Dipartimento di Matematica';
+
+7. BONUS: Selezionare per ogni studente il numero di tentativi sostenuti
+per ogni esame, stampando anche il voto massimo. Successivamente,
+filtrare i tentativi con voto minimo 18.
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
+QUERY con GROUP BY
+
+1. Contare quanti iscritti ci sono stati ogni anno
+SELECT YEAR(enrolment_date) AS enrolment_year, COUNT(*) as total_enrolments
+FROM students
+GROUP BY enrolment_year
+ORDER BY enrolment_year;
+
+2. Contare gli insegnanti che hanno l'ufficio nello stesso edificio
+SELECT office_address, COUNT(*) AS total_teachers
+FROM teachers
+WHERE office_address IS NOT NULL
+GROUP BY office_address;
+
+
+
+3. Calcolare la media dei voti di ogni appello d'esame
+SELECT vote, AVG(vote) AS avarage_votes
+FROM exam_student
+GROUP BY vote;
+
+4. Contare quanti corsi di laurea ci sono per ogni dipartimento
+SELECT departments.name AS department_name, COUNT(degrees.id) AS total_degrees
+FROM departments
+LEFT JOIN degrees ON departments.id = degrees.department_id
+GROUP BY departments.id
+ORDER BY departments.name;
